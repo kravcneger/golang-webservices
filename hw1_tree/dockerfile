@@ -1,4 +1,6 @@
 # docker build -t mailgo_hw1 .
-FROM golang:1.9.2
+FROM golang:1.16
+WORKDIR /go/app
 COPY . .
+RUN go mod init hw1/hw1
 RUN go test -v
