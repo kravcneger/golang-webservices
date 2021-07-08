@@ -28,13 +28,13 @@ func ExecutePipeline(jobs []job) {
 	close(channels[0])
 }
 
-func SingleHash(in_main, out_main chan interface{}) {
+func SingleHash(inMain, outMain chan interface{}) {
 	var data []string
-	for val := range in_main {
+	for val := range inMain {
 		data = append(data, fmt.Sprintf("%v", val))
 	}
-	first_out_channel := make(chan interface{})
-	second_out_channel := make(chan interface{})
+	firstOutChannel := make(chan interface{})
+	secondOutChannel := make(chan interface{})
 
 	freeFlowJobs1 := []job{
 		job(func(in, out chan interface{}) {
@@ -57,7 +57,7 @@ func SingleHash(in_main, out_main chan interface{}) {
 			}
 			wg.Wait()
 			for _, v := range resChQueue {
-				first_out_channel <- fmt.Sprintf("%v", <-v)
+				firstOutChannel <- fmt.Sprintf("%v", <-v)
 				close(v)
 			}
 		}),
@@ -78,7 +78,7 @@ func SingleHash(in_main, out_main chan interface{}) {
 		wg.Wait()
 
 		for _, v := range resChQueue {
-			second_out_channel <- fmt.Sprintf("%v", <-v)
+			secondOutChannel <- fmt.Sprintf("%v", <-v)
 			close(v)
 		}
 	})}
@@ -87,16 +87,16 @@ func SingleHash(in_main, out_main chan interface{}) {
 	go ExecutePipeline(freeFlowJobs2)
 
 	for _ = range data {
-		out_main <- fmt.Sprintf("%v", <-second_out_channel) + "~" + fmt.Sprintf("%v", <-first_out_channel)
+		outMain <- fmt.Sprintf("%v", <-secondOutChannel) + "~" + fmt.Sprintf("%v", <-firstOutChannel)
 	}
 }
 
-func MultiHash(in_main, out_main chan interface{}) {
+func MultiHash(inMain, outMain chan interface{}) {
 	freeFlowJobs := []job{
 		job(func(in, out chan interface{}) {
 			var in_data []interface{}
 
-			for v := range in_main {
+			for v := range inMain {
 				in_data = append(in_data, v)
 			}
 			var wgExt = &sync.WaitGroup{}
@@ -130,7 +130,7 @@ func MultiHash(in_main, out_main chan interface{}) {
 			}
 			wgExt.Wait()
 			for _, v := range resExtChQueue {
-				out_main <- fmt.Sprintf("%v", <-v)
+				outMain <- fmt.Sprintf("%v", <-v)
 				close(v)
 			}
 		}),
@@ -138,14 +138,14 @@ func MultiHash(in_main, out_main chan interface{}) {
 	ExecutePipeline(freeFlowJobs)
 }
 
-func CombineResults(in_main, out_main chan interface{}) {
+func CombineResults(inMain, outMain chan interface{}) {
 	var data []string
-	for val := range in_main {
+	for val := range inMain {
 		data = append(data, fmt.Sprintf("%v", val))
 	}
 	sort.Slice(data, func(i, j int) bool {
 		return data[i] < data[j]
 	})
 	res := strings.Join(data[:], "_")
-	out_main <- res
+	outMain <- res
 }
