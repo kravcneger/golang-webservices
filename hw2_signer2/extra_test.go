@@ -44,7 +44,7 @@ func TestByIlia(t *testing.T) {
 
 	start := time.Now()
 
-	ExecutePipeline(freeFlowJobs...)
+	ExecutePipeline(freeFlowJobs)
 
 	end := time.Since(start)
 

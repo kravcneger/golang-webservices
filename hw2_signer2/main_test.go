@@ -39,7 +39,7 @@ func TestPipeline(t *testing.T) {
 			}
 		}),
 	}
-	ExecutePipeline(freeFlowJobs...)
+	ExecutePipeline(freeFlowJobs)
 	if !ok || recieved == 0 {
 		t.Errorf("no value free flow - dont collect them")
 	}
@@ -124,7 +124,7 @@ func TestSigner(t *testing.T) {
 
 	start := time.Now()
 
-	ExecutePipeline(hashSignJobs...)
+	ExecutePipeline(hashSignJobs)
 
 	end := time.Since(start)
 
