@@ -23,11 +23,14 @@ var (
 )
 
 type User struct {
-	Id     int
-	Name   string
-	Age    int
-	About  string
-	Gender string
+	Id        int    `xml:"id" json:"id"`
+	Guid      string `xml:"guid" json:"guid"`
+	IsActive  bool   `xml:"isActive" json:"isActive"`
+	Age       int    `xml:"age" json:"age"`
+	FirstName string `xml:"first_name" json:"first_name"`
+	LastName  string `xml:"last_name" json:"last_name"`
+	About     string `xml:"about" json:"about"`
+	Name      string `xml:"name" json:"name"`
 }
 
 type SearchResponse struct {
@@ -89,7 +92,7 @@ func (srv *SearchClient) FindUsers(req SearchRequest) (*SearchResponse, error) {
 
 	searcherReq, err := http.NewRequest("GET", srv.URL+"?"+searcherParams.Encode(), nil)
 	searcherReq.Header.Add("AccessToken", srv.AccessToken)
-	
+
 	resp, err := client.Do(searcherReq)
 	if err != nil {
 		if err, ok := err.(net.Error); ok && err.Timeout() {
