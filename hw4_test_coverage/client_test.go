@@ -92,6 +92,25 @@ func SearchServer(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	sortUsers(users, orderField, orderBy)
+	paginateUsers(&users, limit, offset)
+
+	if len(users) == 0 {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("[]"))
+		return
+	}
+
+	var jsonData []byte
+	jsonData, err = json.Marshal(users)
+	if err != nil {
+		panic(err)
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func sortUsers(users []User, orderField string, orderBy string) {
 	sort.Slice(users, func(i, j int) bool {
 		if orderBy == "1" {
 			switch orderField {
@@ -114,33 +133,21 @@ func SearchServer(w http.ResponseWriter, r *http.Request) {
 		}
 		return users[i].Name > users[j].Name
 	})
+}
 
-	len_res := len(users)
+func paginateUsers(users *[]User, limit int, offset int) {
+	len_res := len(*users)
 	if offset+limit >= len_res {
 		if offset < len_res {
-			users = users[offset:]
+			*users = (*users)[offset:]
 		} else {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("[]"))
-			return
+			users = &[]User{}
 		}
 	} else {
-		users = users[offset:(limit + offset)]
+		*users = (*users)[offset:(limit + offset)]
 	}
-	if len(users) == 0 {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("[]"))
-		return
-	}
-
-	var jsonData []byte
-	jsonData, err = json.Marshal(users)
-	if err != nil {
-		panic(err)
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
 }
+
 func TestFindUsersStatusInternalServerError(t *testing.T) {
 	handlerFunc := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
